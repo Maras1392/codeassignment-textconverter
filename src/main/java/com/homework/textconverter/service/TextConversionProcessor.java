@@ -4,38 +4,41 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Service
 @AllArgsConstructor
 public class TextConversionProcessor {
 
-    private final TextParser textParser;
-    private final XmlGenerator xmlGenerator;
+    private final TextToXmlConverter xmlConverter;
+    private final TextToCsvConverter csvConverter;
 
+    /**
+     * Chooses correct process conversion based on conversion type
+     *
+     * @param filepath       path to the file which should be converted
+     * @param conversionType type of Conversion
+     */
     public void convertText(String filepath, String conversionType) {
-        /*if ("csv".equals(conversionType)) {
-            log.info("Processing CSV conversion.");
-            textParser.convertToCsv(filepath);
+        // in more cases switch makes sense
+        if ("csv".equals(conversionType)) {
 
-            // create csv file
-            return;
-        } else*/ if ("xml".equals(conversionType)) {
-            log.info("Processing XML conversion.");
-            Map<Long, List<String>> convertedSentences = textParser.convertToXml(filepath);
-            log.info("Text was loaded. Number of sentences: {}", convertedSentences.size());
-//            xmlGenerator.convertToXml(filepath, convertedSentences);
-            return;
-        } else if (conversionType == null) {
-            log.info("Processing CSV and XML conversion.");
-            textParser.convertToCsv(filepath);
-            // convert to csv file
-//            xmlGenerator.convertToXml(filepath);
-            return;
+            log.info("Processing CSV conversion - started.");
+            csvConverter.convertToCsv(filepath);
+            log.info("Processing CSV conversion - finished.");
+
+        } else if ("xml".equals(conversionType)) {
+
+            log.info("Processing XML conversion - started.");
+            xmlConverter.convertToXml(filepath);
+            log.info("Processing XML conversion - finished.");
+
+        } else {
+
+            log.error("Invalid conversion type: {}", conversionType);
+            throw new RuntimeException("Invalid conversion type.");
         }
-        log.error("Invalid conversion type: {}", conversionType);
-        throw new RuntimeException("Invalid conversion type.");
     }
+
+
 }

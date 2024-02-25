@@ -3,6 +3,7 @@ package com.homework.textconverter.config;
 import com.homework.textconverter.service.TextConversionProcessor;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.ApplicationListener;
@@ -19,17 +20,20 @@ public class SpringApplicationEventListener implements ApplicationListener<Appli
 
     @Override
     public void onApplicationEvent(ApplicationStartedEvent event) {
-        String[] args = applicationArguments.getSourceArgs();
-        if (args.length == 0) {
-            log.error("No filepath provided.");
-            throw new RuntimeException("No filepath provided. Please re-run with filepath specified");
-        } else if (args.length==1) {
-            String filepath = args[0];
-            this.conversionProcessor.convertText(filepath, null);
-        } else {
-            String filepath = args[0];
-            String type = args[1];
-            this.conversionProcessor.convertText(filepath, type);
+        try {
+            String[] args = applicationArguments.getSourceArgs();
+            if (args.length == 2 &&
+                    !(StringUtils.isBlank(args[0]) || StringUtils.isBlank(args[1]))) {
+
+                String filepath = args[0];
+                String type = args[1];
+                this.conversionProcessor.convertText(filepath, type);
+            } else {
+                log.error("Invalid inputs. Received {} invalid inputs", args.length);
+                throw new RuntimeException("Invalid inputs. Expected exactly two valid parameters. First for filepath, second for conversion type.");
+            }
+        } catch (Exception e) {
+            log.error("Process failed", e);
         }
     }
 }
